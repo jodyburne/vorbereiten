@@ -8,6 +8,6 @@
 #### Made using:
 - node
 - express
--mongodb
+- mongodb
 
 Cheers!
