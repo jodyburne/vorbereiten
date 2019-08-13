@@ -16,17 +16,18 @@ mongoose
         console.log('error with mongo connection', err)
     });
 
+//creating the examples
 User.deleteMany().then(() => {
     return User.create(data)
 }).then(docs => {
-    // console.log('ALL', docs)
-    console.log('AVAILABILTY') 
-    //docs.map( doc => doc.availability)
+    console.log('DATA AVAILABILTY') 
+    console.log(docs.map( doc => doc.availability))
 })
 .catch(err => {
     console.log('data creation error', err)
 })
 
+//route to create new users
 app.post('/new', (req, res, next) => {
     let availabilityArr = []
     if (req.body.monday) {
@@ -59,13 +60,15 @@ app.post('/new', (req, res, next) => {
     }
     )
 })
-
+//route returns calls candidates
 app.get('/', (req, res, next) => {
     User.find({role: 'candidate'})
     .then(users => {
         res.json(users)
     })
 })
+
+//route finds common interview timeslots between a candidate and all interviewers
 app.post('/', (req, res, next) => {
     let candidate = req.query.name
 
@@ -74,13 +77,10 @@ Promise.all([
  User.find({role: 'interviewer'}) 
 ])
 .then(([candidate, interviewers]) => {
-//this returns array of objects
-// res.json(interviewers)
 let result =[]
 let candidateAvailability = candidate[0].availability
 for (let i = 0; i < interviewers.length; i++) {
     let commonAvailability = {}
-    //returning one object after the other
 commonAvailability[interviewers[i].name] = getPossTimeSlots(candidateAvailability, interviewers[i].availability)
 result.push(commonAvailability)
 }
@@ -95,10 +95,11 @@ app.listen(3000, () => {
   console.log('interview app on port 3000')
 });
 
+//filter function
 function getPossTimeSlots(candidate, interviewer){
  let availabilityC = candidate   
  let availabilityI = interviewer
-let test = []
+let finalResults = []
 for (let i = 0; i < availabilityC.length; i++) {
   for (let j = 0; j < availabilityI.length; j++) {
 let result = {}
@@ -115,10 +116,10 @@ let result = {}
       let comHours = result1.filter(elem => result2.includes(elem))
       if (comHours.length > 0) {
      result[Object.keys(availabilityC[i])[0]] = comHours
-        test.push(result)
+        finalResults.push(result)
       } 
     }
   }
 }
-return test 
+return finalResults 
 }
